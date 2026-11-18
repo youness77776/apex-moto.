@@ -50,10 +50,11 @@ jobs:
           wrapper.write_text(content)
           PY
 
+      
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: '3.29.3'
 
       - name: Get dependencies
         working-directory: source/APEX_MOTO_Velocity_Legends
