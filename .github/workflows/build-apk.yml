@@ -4,13 +4,15 @@ name: Build APEX MOTO APK
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download project
+      - name: Checkout project
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -24,18 +26,44 @@ jobs:
           mkdir source
           unzip -q APEX_MOTO_Velocity_Legends_FLUTLAB.zip -d source
 
+      - name: Fix Gradle versions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path("source/APEX_MOTO_Velocity_Legends/android")
+
+          settings = root / "settings.gradle"
+          content = settings.read_text()
+          content = content.replace(
+              'version "8.3.2"',
+              'version "8.5.2"'
+          )
+          settings.write_text(content)
+
+          wrapper = root / "gradle/wrapper/gradle-wrapper.properties"
+          content = wrapper.read_text()
+          content = content.replace(
+              "gradle-8.4-all.zip",
+              "gradle-8.7-all.zip"
+          )
+          wrapper.write_text(content)
+          PY
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      - name: Build APK
-        run: |
-          cd source/APEX_MOTO_Velocity_Legends
-          flutter pub get
-          flutter build apk --release
+      - name: Get dependencies
+        working-directory: source/APEX_MOTO_Velocity_Legends
+        run: flutter pub get
 
-      - name: Download APK
+      - name: Build APK
+        working-directory: source/APEX_MOTO_Velocity_Legends
+        run: flutter build apk --release
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: APEX-MOTO-APK
