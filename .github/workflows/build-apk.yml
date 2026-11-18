@@ -1,0 +1,43 @@
+
+name: Build APEX MOTO APK
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download project
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Extract ZIP
+        run: |
+          mkdir source
+          unzip -q APEX_MOTO_Velocity_Legends_FLUTLAB.zip -d source
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Build APK
+        run: |
+          cd source/APEX_MOTO_Velocity_Legends
+          flutter pub get
+          flutter build apk --release
+
+      - name: Download APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: APEX-MOTO-APK
+          path: source/APEX_MOTO_Velocity_Legends/build/app/outputs/flutter-apk/app-release.apk
+          
